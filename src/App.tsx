@@ -1,13 +1,16 @@
-import { todoApi } from "./api/Todo";
-import { useEffect, useState } from "react";
-import { Form } from "./input";
-import "./App.css";
+import React, { useEffect, useState } from "react";
+import { todoApi } from "./api/TodoApi";
+import { Form } from "./Form";
 import { Todos } from "./Todos";
-
-const App = () => {
-    const [todos, setTodos] = useState([]);
-    const [todoInputValue, setTodoInputValue] = useState("");
-
+import "./App.css";
+type Todo = {
+    id: string;
+    text: string;
+    status: "TODO" | "INPROGRESS" | "DONE";
+};
+const App: React.FC = () => {
+    const [todos, setTodos] = useState<Todo[]>([]);
+    const [todoInputValue, setTodoInputValue] = useState<string>("");
     useEffect(() => {
         todoApi
             .getAll()
@@ -18,17 +21,14 @@ const App = () => {
                 console.log(err);
             });
     }, []);
-
-    const handleTodoInputChange = (value) => {
+    const handleTodoInputChange = (value: string): void => {
         setTodoInputValue(value);
     };
-
-    const createTodo = (e) => {
+    const createTodo = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (todoInputValue.length < 3) {
             return;
         }
-
         todoApi
             .create(todoInputValue)
             .then((response) => {
@@ -41,34 +41,17 @@ const App = () => {
                 console.log(err);
             });
     };
-
-    const updateStatus = (id, status) => {
+    const updateStatus = (
+        id: string,
+        status: "TODO" | "INPROGRESS" | "DONE"
+    ): void => {
         todoApi
             .updateStatus(id, status)
             .then((_) => {
                 setTodos((prevTodos) => {
-                    /* 
-                    const updatedTodos = prevTodos.map((todo) => {
-                        if (todo.id === id) {
-                            const copy = { ...todo };
-                            copy.status = status;
-                            return copy;
-                        }
-                        return todo;
-                    });
-                    return updatedTodos;
-                    */
-                    const copyTodos = [];
-                    for (let i = 0; i < todos.length; i++) {
-                        const todo = todos[i];
-                        if (todo.id === id) {
-                            const copy = { ...todo };
-                            copy.status = status;
-                            copyTodos.push(copy);
-                        } else {
-                            copyTodos.push(todo);
-                        }
-                    }
+                    const copyTodos = prevTodos.map((todo) =>
+                        todo.id === id ? { ...todo, status } : todo
+                    );
                     return copyTodos;
                 });
             })
@@ -76,33 +59,28 @@ const App = () => {
                 console.log(err);
             });
     };
-
-    const deleteTodo = (id) => {
+    const deleteTodo = (id: string): void => {
         todoApi
             .deleteOne(id)
             .then(() => {
-                setTodos((prevTodos) => {
-                    return prevTodos.filter((todo) => todo.id !== id);
-                });
+                setTodos((prevTodos) =>
+                    prevTodos.filter((todo) => todo.id !== id)
+                );
             })
             .catch((err) => {
                 console.log(err);
             });
     };
-
     const isSubmitButtonDisabled = !todoInputValue.length;
-
     return (
         <main>
             <h1>Todo App</h1>
-
             <Form
                 isSubmitButtonDisabled={isSubmitButtonDisabled}
                 todoValue={todoInputValue}
                 handleTodoValue={handleTodoInputChange}
                 createTodo={createTodo}
             />
-
             <Todos
                 todos={todos}
                 updateStatus={updateStatus}

@@ -1,8 +1,9 @@
 class TodoAPI {
+    private endpoint: string;
     constructor() {
-        this.endpoint = process.env.REACT_APP_API;
+        this.endpoint = process.env.REACT_APP_API || "";
     }
-    async create(text) {
+    async create(text: string): Promise<any> {
         try {
             const response = await fetch(`${this.endpoint}/tasks`, {
                 method: "POST",
@@ -13,46 +14,41 @@ class TodoAPI {
                     text: text
                 })
             });
-
             if (!response.ok) {
                 const data = await response.json();
                 throw new Error(data.message);
             }
-
-            return await response.json();
-        } catch (error) {
-            console.log(error.message);
-        }
-    }
-    async getAll() {
-        try {
-            const response = await fetch(`${this.endpoint}/tasks`);
-            if (!response.ok) {
-                throw new Error(response.error);
-            }
-
             return await response.json();
         } catch (error) {
             console.log(error);
         }
     }
-
-    async deleteOne(id) {
+    async getAll(): Promise<any> {
+        try {
+            const response = await fetch(`${this.endpoint}/tasks`);
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message);
+            }
+            return await response.json();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    async deleteOne(id: string): Promise<void> {
         try {
             const response = await fetch(`${this.endpoint}/tasks/${id}`, {
                 method: "DELETE"
             });
-
             if (!response.ok) {
                 const data = await response.json();
                 throw new Error(data.message);
             }
         } catch (error) {
-            console.log(error.message);
+            console.log(error);
         }
     }
-
-    async updateStatus(id, status) {
+    async updateStatus(id: string, status: string): Promise<void> {
         try {
             const response = await fetch(`${this.endpoint}/tasks/${id}`, {
                 method: "PATCH",
@@ -63,15 +59,13 @@ class TodoAPI {
                     status: status
                 })
             });
-
             if (!response.ok) {
                 const data = await response.json();
                 throw new Error(data.message);
             }
         } catch (error) {
-            console.log(error.message);
+            console.log(error);
         }
     }
 }
-
 export const todoApi = new TodoAPI();
